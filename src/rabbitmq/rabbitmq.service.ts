@@ -9,12 +9,12 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   onModuleInit() {
     this.connection = amqp.connect(['amqp://localhost:5672']);
     this.channelWrapper = this.connection.createChannel({
-      setup: channel => channel.assertQueue('customers_queue', { durable: true })
+      setup: channel => channel.assertQueue('users_queue', { durable: true })
     });
   }
 
   async sendToQueue(message: any) {
-    await this.channelWrapper.sendToQueue('customers_queue', Buffer.from(JSON.stringify(message)), {
+    await this.channelWrapper.sendToQueue('users_queue', Buffer.from(JSON.stringify(message)), {
       contentType: 'application/json',
     });
   }
