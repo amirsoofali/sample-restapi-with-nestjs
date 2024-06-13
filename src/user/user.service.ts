@@ -72,7 +72,7 @@ export class UsersService {
     if (!user || !user.avatarUrl) {
       const data = await this.fetchUserFromApi(userId);
       const avatarUrl = data.avatarUrl;
-      const avatar = await this.downloadAvatar(userId, avatarUrl);
+      const avatar = await this.downloadAvatar(avatarUrl);
       user.avatarUrl = avatarUrl;
       user.avatarHash = avatar.hash;
       await user.save();
