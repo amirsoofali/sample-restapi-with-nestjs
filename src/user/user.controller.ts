@@ -1,11 +1,25 @@
-import { Controller, Get, Post, Delete, Param, Body } from '@nestjs/common';
-import { UsersService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { User } from './user.schema';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+} from '@nestjs/common';
+import {
+  UsersService,
+} from './user.service';
+import {
+  CreateUserDto,
+} from './dto/create-user.dto';
+import {
+  User,
+} from './user.schema';
 
 @Controller('api/users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) {
+  }
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto): Promise<User> {
@@ -18,9 +32,11 @@ export class UsersController {
   }
 
   @Get(':userId/avatar')
-  async getUserAvatar(@Param('userId') userId: string): Promise<{ avatar: string }> {
-    const avatar = await this.usersService.getUserAvatar(userId);
-    return { avatar };
+  async getUserAvatar(@Param('userId') userId: string): Promise<{
+    _id: string,
+    base64: string
+  }> {
+    return await this.usersService.getUserAvatar(userId);
   }
 
   @Delete(':userId/avatar')
