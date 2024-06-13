@@ -33,7 +33,7 @@ import {
   firstValueFrom,
 } from 'rxjs';
 import {
-  AxiosError,
+  AxiosError,AxiosResponse
 } from 'axios';
 
 @Injectable()
@@ -94,20 +94,50 @@ export class UsersService {
     }
   }
 
-  private async downloadAvatar(userId: string, url: string): Promise<{
-    base64: string,
-    hash: string
+  private async downloadAvatar(url: string): Promise<{
+    base64: string;
+    hash: string;
   }> {
-    const response = await this.httpService.get(url, { responseType: 'arraybuffer' }).toPromise();
-    const buffer = Buffer.from(response.data);
-    const hash = createHash('sha256').update(buffer).digest('hex');
-    const filePath = `./avatars/${hash}`;
-    await writeFile(filePath, buffer);
-    return {
-      base64: buffer.toString('base64'),
-      hash,
-    };
+    try {
+      const response: AxiosResponse = await firstValueFrom(
+        this.httpService.get(url, { responseType: 'arraybuffer' }).pipe(
+          catchError((error: AxiosError) => {
+            this.logger.error(error.response?.data || error.message);
+            throw new Error('An error occurred while downloading the avatar!');
+          }),
+        ),
+      );
+
+      const buffer = Buffer.from(response.data);
+      const hash = createHash('sha256').update(buffer).digest('hex');
+      const filePath = `./avatars/${hash}`;
+
+      await writeFile(filePath, buffer);
+
+      return {
+        base64: buffer.toString('base64'),
+        hash,
+      };
+    } catch (error) {
+      this.logger.error(`Failed to download avatar: ${error.message}`);
+      throw error;
+    }
   }
+
+  // private async downloadAvatar(url: string): Promise<{
+  //   base64: string,
+  //   hash: string
+  // }> {
+  //   const response = await this.httpService.get(url, { responseType: 'arraybuffer' }).toPromise();
+  //   const buffer = Buffer.from(response.data);
+  //   const hash = createHash('sha256').update(buffer).digest('hex');
+  //   const filePath = `./avatars/${hash}`;
+  //   await writeFile(filePath, buffer);
+  //   return {
+  //     base64: buffer.toString('base64'),
+  //     hash,
+  //   };
+  // }
 
   private async fetchUserFromApi(userId: string): Promise<User> {
     const { data } = await firstValueFrom(
